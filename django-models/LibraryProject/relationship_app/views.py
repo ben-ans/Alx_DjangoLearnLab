@@ -1,0 +1,60 @@
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import ListView, CreateView
+from .models import Book, Library
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib import messages
+# from django.contrib.auth.views import LoginView, LogoutView
+
+
+
+
+# Create your views here.
+def list_books_view(request):
+    books = Book.objects.select_related('author').all()
+        
+    return render(request,'relationship_app/list_books.html', {"books": books})
+
+
+
+class LibBooks(ListView):
+    model = Book
+    template_name = "relationship_app/list_lib_books.html"
+    # context_object_name
+
+    def get_queryset(self):
+        self.library = get_object_or_404(Library,
+            name__iexact=self.kwargs["library_name"]   # case-insensitive match
+        )
+  
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['library'] = self.library
+        return context
+
+
+
+# AUTHENTICATION PART
+def login_user(request):
+    if request.method =="POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('books')
+        else:
+            messages.success(request, ("There was a problem in your logins please try again"))
+            return redirect('login')
+
+    else:
+        return render(request, 'registration/login.html', {})
+    
+def logout_user(request):
+    logout(request)
+    return render(request,'registration/logout.html')
+
+
+def register_user(request):
+    return render(request, 'registration/register_user.html', {} )
