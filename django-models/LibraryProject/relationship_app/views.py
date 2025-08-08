@@ -4,7 +4,7 @@ from .models import Book, Library
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
-# from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.decorators import permission_required
 
 
 
@@ -15,6 +15,34 @@ def list_books_view(request):
         
     return render(request,'relationship_app/list_books.html', {"books": books})
 
+@permission_required('relationship_app.can_add_book', raise_exception=True)
+def add_book(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        author = request.POST.get('author')
+        Book.objects.create(title=title, author=author)
+        return redirect('books')
+    return render(request, 'relationship_app/add_book.html')
+
+
+@permission_required('relationship_app.can_change_book', raise_exception=True)
+def edit_book(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        author = request.POST.get('author')
+        book.save()
+        return redirect('books')
+    return render(request, 'relationship_app/edit_book.html', {'book':book})
+
+
+@permission_required('relationship_app.can_change_book', raise_exception=True)
+def delete_book(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    if request.method == 'POST':
+        book.delete()
+        return redirect('books')
+    return render(request, 'relationship_app/delete_book.html', {'book':book})
 
 
 class LibBooks(ListView):
