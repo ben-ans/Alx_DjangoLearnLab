@@ -1,0 +1,8 @@
+{
+    "python.analysis.extraPaths": [
+        "./bookshelf",
+        "./relationship_app/views",
+        "./relationship_app",
+        "./relationship_app/view"
+    ]
+}
